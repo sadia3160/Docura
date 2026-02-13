@@ -1,12 +1,17 @@
 package gui.mainpages;
 
 import com.mysql.cj.util.StringUtils;
+import database.delete.DeleteMedicine;
 import database.pull.PullDiagnosis;
 import database.pull.PullPatient;
 import database.save.SaveDiagnosis;
+import database.save.SavePrescription;
 import gui.MainFrame;
 
 import javax.swing.*;
+import javax.swing.border.Border;
+import javax.swing.border.EmptyBorder;
+import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 
 /*
@@ -19,12 +24,14 @@ FEATURES OF DOCTOR PORTAL
 public class DoctorMain extends MainFrame {
 
     JScrollPane p, t, scroll;
-    JTextField patId, patId2;
+    JTextField patId, patId2, pidt, med, quan;
+    DefaultTableModel tableModel; JTable table;
+
     public DoctorMain(String id){
 
         //Frame
         frame.setTitle("Doctor Portal");
-        top_panel.setBackground(new Color(0x476681));
+        top_panel.setBackground(new Color(0x31487A));
         side_bar.setBackground(new Color(0xE8EDEE));
         center_panel.setBackground(Color.WHITE);
 
@@ -42,6 +49,7 @@ public class DoctorMain extends MainFrame {
         //Action Lisenter
         pat.addActionListener(e -> patActions());
         dig.addActionListener(e -> digActions());
+        drg.addActionListener(e -> drgActions());
 
         side_bar.add(pat);
         side_bar.add(dig);
@@ -153,6 +161,101 @@ public class DoctorMain extends MainFrame {
         }
     }
 
-    //WRITE PRESCRIPTION for Patient
+    //**WRITE PRESCRIPTION for Patient
+    private void drgActions(){
+        center_panel.removeAll();
 
+        JPanel top = new JPanel();
+        JPanel top2 = new JPanel(new BorderLayout());
+        JPanel right = new JPanel();
+        right.setPreferredSize(new Dimension(250,200));
+        right.setBackground(new Color(0xD9E1F1));
+
+        JPanel mid = new JPanel(new BorderLayout());
+
+        JLabel ep = new JLabel("Enter Patient ID:");
+        pidt = new JTextField();
+        pidt.setPreferredSize(new Dimension(177, 25));
+
+        JLabel nw = new JLabel("New Medicine:");
+        med = new JTextField();
+        med.setPreferredSize(new Dimension(200, 25));
+
+        JLabel qn = new JLabel("Quantity:");
+        quan = new JTextField();
+        quan.setPreferredSize(new Dimension(200, 25));
+
+        JButton add = new JButton("Add");
+        add.addActionListener(e -> NewMedicine());
+
+        JButton del = new JButton("Delete");
+        del.addActionListener(e -> RemoveMedicine());
+        JButton print = new JButton("Print"); //
+        print.addActionListener(e -> PrintPrescription());
+
+        top.add(ep); top.add(pidt);
+        JSeparator vsep = new JSeparator(SwingConstants.VERTICAL); top.add(vsep);
+        top.add(print);
+        right.add(nw); right.add(med);
+        right.add(qn); right.add(quan);
+        right.add(add); right.add(del);
+
+        //Center table view
+        tableModel = new DefaultTableModel();
+        tableModel.addColumn("Medicines");
+        tableModel.addColumn("Quantity");
+        table = new JTable(tableModel);
+        table.setShowGrid(true);
+
+        JScrollPane jsp = new JScrollPane(table, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+        mid.add(jsp, BorderLayout.CENTER);
+
+        top2.add(top, BorderLayout.WEST);
+        center_panel.add(top2, BorderLayout.NORTH);
+        center_panel.add(right, BorderLayout.EAST);
+        center_panel.add(mid, BorderLayout.CENTER);
+
+        center_panel.revalidate();
+        center_panel.repaint();
+    }
+
+    private void NewMedicine(){
+
+        String id = pidt.getText();
+        String m = med.getText();
+        String q = quan.getText();
+
+        if(!StringUtils.isEmptyOrWhitespaceOnly(id) && !StringUtils.isNullOrEmpty(id) &&
+                !StringUtils.isEmptyOrWhitespaceOnly(m) && !StringUtils.isNullOrEmpty(m) &&
+        !StringUtils.isEmptyOrWhitespaceOnly(q) && !StringUtils.isNullOrEmpty(q)) {
+
+            new SavePrescription(id, m, q);
+            Object[] data = {m,q};
+            tableModel.addRow(data);
+        }
+        else{
+            JOptionPane.showMessageDialog(null, "Enter all information!", "Message", JOptionPane.ERROR_MESSAGE, null);
+        }
+
+    }
+
+    private void RemoveMedicine(){
+
+        int rowIdx = table.getSelectedRow();
+        String id = pidt.getText();
+        if(rowIdx == -1 && !StringUtils.isEmptyOrWhitespaceOnly(id) && !StringUtils.isNullOrEmpty(id)){
+            JOptionPane.showMessageDialog(null, "Select a row!", "Message", JOptionPane.ERROR_MESSAGE, null);
+        }
+        else{
+            int count = table.getColumnCount();
+            String m = (String) tableModel.getValueAt(rowIdx, 0);
+            String q = (String) tableModel.getValueAt(rowIdx, 1);
+            tableModel.removeRow(rowIdx);
+            new DeleteMedicine(id, m, q);
+        }
+    }
+
+    private void PrintPrescription(){
+        JOptionPane.showMessageDialog(null, "This feature is not developed yet!", "Message", JOptionPane.INFORMATION_MESSAGE, null);
+    }
 }

@@ -2,6 +2,8 @@ package gui.mainpages;
 
 import com.mysql.cj.util.StringUtils;
 import com.toedter.calendar.JCalendar;
+import database.delete.DeleteItem;
+import database.delete.DeleteMedicine;
 import database.pull.*;
 import database.save.*;
 import gui.MainFrame;
@@ -9,6 +11,7 @@ import gui.applications.admins.*;
 import gui.applications.doctors.*;
 
 import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -25,13 +28,16 @@ public class AdminMain extends MainFrame {
 
     AdminSidebar asb;
     Scheduling obj;
-    PatientForm pf; DoctorForm df;
+    PatientForm pf; DoctorForm df; InvoiceForm ifr;
 
     JPanel doctorPanel;
-    JDialog appointment_dialog, patient_dialog, doctor_dialog;
+    JDialog appointment_dialog, patient_dialog, doctor_dialog, bill_dialog;
     JScrollPane jsp, docs;
     JCalendar calendar; Date date;
     JComboBox deptSelection;
+
+    DefaultTableModel tableModel; JTable table;
+    JTextField pidt;
 
     public AdminMain(String id){
 
@@ -46,7 +52,7 @@ public class AdminMain extends MainFrame {
 
         asb.sch.addActionListener(e -> schActions());
         asb.reg.addActionListener(e -> regActions());
-//        asb.bill.addActionListener(e -> billActions());
+        asb.bill.addActionListener(e -> billActions());
         asb.list.addActionListener(e -> listActions());
 
         side_bar.add(asb.sch);
@@ -353,6 +359,125 @@ public class AdminMain extends MainFrame {
         }
     }
 
-    //BILLING
+    //**BILLING
+    private void billActions(){
+        center_panel.removeAll();
 
+        JPanel top = new JPanel();
+        JPanel top2 = new JPanel(new BorderLayout());
+        JPanel right = new JPanel();
+        right.setPreferredSize(new Dimension(250,200));
+        right.setBackground(new Color(0xdddddd));
+
+        JPanel mid = new JPanel(new BorderLayout());
+
+        JLabel ep = new JLabel("Enter Patient ID:");
+        pidt = new JTextField();
+        pidt.setPreferredSize(new Dimension(177, 25));
+
+
+        JButton add = new JButton("Add New +");
+        add.addActionListener(e -> InsertService());
+        JButton del = new JButton("Delete");
+        del.addActionListener(e -> RemoveItem());
+        add.setPreferredSize(new Dimension(200, 25));
+        del.setPreferredSize(new Dimension(200, 25));
+        JButton print = new JButton("Print"); //
+        print.addActionListener(e -> PrintBill());
+
+        top.add(ep); top.add(pidt);
+        JSeparator vsep = new JSeparator(SwingConstants.VERTICAL); top.add(vsep);
+        top.add(print);
+        right.add(add); right.add(del);
+
+        //Center table view
+        tableModel = new DefaultTableModel();
+        tableModel.addColumn("Service");
+        tableModel.addColumn("Price");
+        tableModel.addColumn("Quantity");
+        table = new JTable(tableModel);
+        table.setShowGrid(true);
+
+        JScrollPane jsp = new JScrollPane(table, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+        mid.add(jsp, BorderLayout.CENTER);
+
+        top2.add(top, BorderLayout.WEST);
+        center_panel.add(top2, BorderLayout.NORTH);
+        center_panel.add(right, BorderLayout.EAST);
+        center_panel.add(mid, BorderLayout.CENTER);
+
+
+        center_panel.revalidate();
+        center_panel.repaint();
+    }
+
+    private void InsertService(){
+
+        ifr = new InvoiceForm();
+        JPanel iform = ifr.inForm();
+
+        bill_dialog = new JDialog(frame,"New Service", true);
+        bill_dialog.setLayout(null);
+        ImageIcon icon = new ImageIcon("src/gui/pictures/docura_logo.png");
+        bill_dialog.setIconImage(icon.getImage());
+        bill_dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+
+        JButton save = new JButton("Save"), cancel = new JButton("Cancel");
+        save.setBounds(427,200,77,25); cancel.setBounds(339,200,77,25);
+
+        cancel.addActionListener(e -> bill_dialog.dispose());
+        save.addActionListener(e -> NewItem());
+
+        iform.add(save);
+        iform.add(cancel);
+
+        bill_dialog.add(iform);
+        bill_dialog.setSize(551,300);
+        bill_dialog.setResizable(false);
+        bill_dialog.setLocationRelativeTo(null);
+        bill_dialog.setVisible(true);
+
+    }
+
+    private void NewItem(){
+
+        String id = pidt.getText();
+        String s = ifr.getService();
+        String p = ifr.getPrice();
+        String q = ifr.getQuantity();
+
+        if(!StringUtils.isEmptyOrWhitespaceOnly(id) && !StringUtils.isNullOrEmpty(id) &&
+                !StringUtils.isEmptyOrWhitespaceOnly(s) && !StringUtils.isNullOrEmpty(s) &&
+                !StringUtils.isEmptyOrWhitespaceOnly(p) && !StringUtils.isNullOrEmpty(p) &&
+                !StringUtils.isEmptyOrWhitespaceOnly(q) && !StringUtils.isNullOrEmpty(q)) {
+
+            new SaveBill(id, s, p, q);
+            Object[] data = {s,p,q};
+            tableModel.addRow(data);
+        }
+        else{
+            JOptionPane.showMessageDialog(null, "Enter all information!", "Message", JOptionPane.ERROR_MESSAGE, null);
+        }
+
+    }
+    private void RemoveItem(){
+
+        int rowIdx = table.getSelectedRow();
+        String id = pidt.getText();
+        if(rowIdx == -1 && !StringUtils.isEmptyOrWhitespaceOnly(id) && !StringUtils.isNullOrEmpty(id)){
+            JOptionPane.showMessageDialog(null, "Select a row!", "Message", JOptionPane.ERROR_MESSAGE, null);
+        }
+        else{
+            int count = table.getColumnCount();
+            String s = (String) tableModel.getValueAt(rowIdx, 0);
+            String p = (String) tableModel.getValueAt(rowIdx, 1);
+            String q = (String) tableModel.getValueAt(rowIdx, 2);
+            tableModel.removeRow(rowIdx);
+            new DeleteItem(id, s, p, q);
+        }
+    }
+
+    private void PrintBill(){
+        JOptionPane.showMessageDialog(null, "This feature is not developed yet!", "Message", JOptionPane.INFORMATION_MESSAGE, null);
+    }
 }

@@ -34,6 +34,7 @@ public class SaveDoctor {
                 dialog.dispose();
             }
         } else {
-            JOptionPane.showMessageDialog(null, "Enter All Data", "Error", JOptionPane.ERROR_MESSAGE, null);}
+            JOptionPane.showMessageDialog(null, "Enter All Data", "Error", JOptionPane.ERROR_MESSAGE, null);
+        }
     }
 }
