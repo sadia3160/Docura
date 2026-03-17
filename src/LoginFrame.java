@@ -1,3 +1,4 @@
+import com.formdev.flatlaf.util.SwingUtils;
 import database.ConSQL;
 import gui.mainpages.AdminMain;
 import gui.mainpages.DoctorMain;
@@ -64,6 +65,7 @@ public class LoginFrame implements ActionListener {
 
         frame.setLayout(null);
         frame.setVisible(true);
+        SwingUtilities.invokeLater(() -> user_input.requestFocusInWindow());
     }
 
     @Override

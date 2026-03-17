@@ -33,7 +33,7 @@ public class AdminMain extends MainFrame {
 
     AdminSidebar asb;
     Scheduling obj;
-    PatientForm pf; DoctorForm df; InvoiceForm ifr;
+    PatientForm pf; DoctorForm df; InvoiceForm ifr; String tt;
 
     JPanel doctorPanel;
     JDialog appointment_dialog, patient_dialog, doctor_dialog, bill_dialog;
@@ -42,7 +42,7 @@ public class AdminMain extends MainFrame {
     JComboBox deptSelection;
 
     DefaultTableModel tableModel; JTable table;
-    JTextField pidt;
+    JTextField pidt, total;
 
     public AdminMain(String id){
 
@@ -380,6 +380,9 @@ public class AdminMain extends MainFrame {
         pidt = new JTextField();
         pidt.setPreferredSize(new Dimension(177, 25));
 
+        JLabel tot = new JLabel("Total:");
+        total = new JTextField();
+        total.setPreferredSize(new Dimension(177, 25));
 
         JButton add = new JButton("Add New +");
         add.addActionListener(e -> InsertService());
@@ -391,7 +394,10 @@ public class AdminMain extends MainFrame {
         print.addActionListener(e -> PrintBill());
 
         top.add(ep); top.add(pidt);
-        JSeparator vsep = new JSeparator(SwingConstants.VERTICAL); top.add(vsep);
+        JSeparator vsep1 = new JSeparator(SwingConstants.VERTICAL); top.add(vsep1);
+        top.add(tot); top.add(total);
+        JSeparator vsep2 = new JSeparator(SwingConstants.VERTICAL); top.add(vsep2);
+
         top.add(print);
         right.add(add); right.add(del);
 
@@ -459,6 +465,7 @@ public class AdminMain extends MainFrame {
             new SaveBill(id, s, p, q);
             Object[] data = {s,p,q};
             tableModel.addRow(data);
+            bill_dialog.dispose();
         }
         else{
             JOptionPane.showMessageDialog(null, "Enter all information!", "Message", JOptionPane.ERROR_MESSAGE, null);
@@ -483,18 +490,28 @@ public class AdminMain extends MainFrame {
     }
 
     private void PrintBill(){
-        try{
-            MessageFormat header = new MessageFormat("Docura - Patient Bill");
-            MessageFormat footer = new MessageFormat("Thank you");
 
-            PrintRequestAttributeSet pras = new HashPrintRequestAttributeSet();
-            pras.add(OrientationRequested.PORTRAIT);
+        tt = total.getText();
+        if(!StringUtils.isEmptyOrWhitespaceOnly(tt) && !StringUtils.isNullOrEmpty(tt)) {
+            Object[] tt_add = {"Total: ", tt};
+            tableModel.addRow(tt_add);
 
-            table.print(JTable.PrintMode.FIT_WIDTH, header, footer, true, pras, true);
-            JOptionPane.showMessageDialog(null, "Printed Successfully!", "Message", JOptionPane.INFORMATION_MESSAGE, null);
+            try{
+                MessageFormat header = new MessageFormat("Docura - Patient Bill");
+                MessageFormat footer = new MessageFormat("Thank You!" );
+
+                PrintRequestAttributeSet pras = new HashPrintRequestAttributeSet();
+                pras.add(OrientationRequested.PORTRAIT);
+
+                table.print(JTable.PrintMode.FIT_WIDTH, header, footer, true, pras, true);
+                JOptionPane.showMessageDialog(null, "Printed Successfully!", "Message", JOptionPane.INFORMATION_MESSAGE, null);
+            }
+            catch(Exception e){
+                JOptionPane.showMessageDialog(null, "Failed!", "Message", JOptionPane.INFORMATION_MESSAGE, null);
+            }
         }
-        catch(Exception e){
-            JOptionPane.showMessageDialog(null, "Failed!", "Message", JOptionPane.INFORMATION_MESSAGE, null);
+        else{
+            JOptionPane.showMessageDialog(null, "Enter Total Bill!", "Message", JOptionPane.WARNING_MESSAGE, null);
         }
     }
 }
