@@ -1,5 +1,6 @@
 package gui.mainpages;
 
+import com.mysql.cj.protocol.MessageHeader;
 import com.mysql.cj.util.StringUtils;
 import com.toedter.calendar.JCalendar;
 import database.delete.DeleteItem;
@@ -10,9 +11,13 @@ import gui.MainFrame;
 import gui.applications.admins.*;
 import gui.applications.doctors.*;
 
+import javax.print.attribute.HashPrintRequestAttributeSet;
+import javax.print.attribute.PrintRequestAttributeSet;
+import javax.print.attribute.standard.OrientationRequested;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
+import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
@@ -478,6 +483,18 @@ public class AdminMain extends MainFrame {
     }
 
     private void PrintBill(){
-        JOptionPane.showMessageDialog(null, "This feature is not developed yet!", "Message", JOptionPane.INFORMATION_MESSAGE, null);
+        try{
+            MessageFormat header = new MessageFormat("Docura - Patient Bill");
+            MessageFormat footer = new MessageFormat("Thank you");
+
+            PrintRequestAttributeSet pras = new HashPrintRequestAttributeSet();
+            pras.add(OrientationRequested.PORTRAIT);
+
+            table.print(JTable.PrintMode.FIT_WIDTH, header, footer, true, pras, true);
+            JOptionPane.showMessageDialog(null, "Printed Successfully!", "Message", JOptionPane.INFORMATION_MESSAGE, null);
+        }
+        catch(Exception e){
+            JOptionPane.showMessageDialog(null, "Failed!", "Message", JOptionPane.INFORMATION_MESSAGE, null);
+        }
     }
 }
